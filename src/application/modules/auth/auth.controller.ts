@@ -1,17 +1,23 @@
-import { Controller, Get, Inject } from "@nestjs/common";
+import { Controller, Get, Inject, Post } from "@nestjs/common";
+import AuthServiceInterface from "src/domain/auth/service/auth_service.interface";
+import SignInResponseInterface from "src/domain/auth/service/dtos/response/sign_in.response";
+import SignUpResponseInterface from "src/domain/auth/service/dtos/response/sign_up.response";
 import LoggerInterface from "src/infrastructure/logger/logger.interface";
 
 @Controller("auth")
 export class AuthController {
   constructor(
-    @Inject("LoggerInterface")
-    private readonly loggerService: LoggerInterface,
+    @Inject("AuthServiceInterface")
+    private readonly service: AuthServiceInterface,
   ) { }
 
-  @Get()
-  test() {
-    this.loggerService.info("test", new Error("asd").message);
-    this.loggerService.error("sasdadaaaaaaa");
-    return "test";
+  @Post("/sign-up")
+  signUp(): SignUpResponseInterface {
+    return this.service.signUp();
+  }
+
+  @Post("/sign-in")
+  signIn(): SignInResponseInterface {
+    return this.service.signIn();
   }
 }

@@ -2,6 +2,7 @@ import { createLogger, Logger } from "winston";
 import { winstonConfig } from "./winston.config";
 import LoggerInterface from "../logger.interface";
 import { LoggerLevels } from "../logger_level.types";
+import { Injectable } from "@nestjs/common";
 
 export default class WinstonLogger implements LoggerInterface {
   private readonly logger: Logger;
