@@ -8,11 +8,10 @@ import AppAuthService from "./auth.service";
 @Module({
   controllers: [AuthController],
   providers: [
-    WinstonLogger,
     {
       provide: "AuthServiceInterface",
       useClass: AppAuthService,
     },
   ],
 })
-export class AuthModule { }
+export class AuthModule {}

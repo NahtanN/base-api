@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
+import WinstonService from "src/application/providers/loggers/winston/winston.service";
 import AuthService from "src/domain/auth/service/auth.service";
-import WinstonLogger from "src/infrastructure/logger/winston/winston.logger";
 
 @Injectable()
 export default class AppAuthService extends AuthService {
-  constructor(logger: WinstonLogger) {
+  constructor(logger: WinstonService) {
     super(logger);
   }
 }
