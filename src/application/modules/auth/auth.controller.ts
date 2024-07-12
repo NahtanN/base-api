@@ -14,11 +14,11 @@ export class AuthController {
   constructor(
     @Inject("AuthServiceInterface")
     private readonly service: AuthServiceInterface,
-  ) {}
+  ) { }
 
   @SignUpDocs()
   @Post("/sign-up")
-  signUp(@Body() dto: SignUpRequest): SignUpResponseInterface {
+  signUp(@Body() dto: SignUpRequest): Promise<SignUpResponseInterface> {
     return this.service.signUp(dto);
   }
 

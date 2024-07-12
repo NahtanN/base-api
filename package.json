@@ -17,7 +17,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migration:create": "node-pg-migrate --migrations-dir ./src/infrastructure/database/migrations create",
+    "migration:run": "node-pg-migrate up --envPath ./.env -m ./src/infrastructure/database/migrations/ 2>migrations.log"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -27,7 +29,11 @@
     "@nestjs/swagger": "^7.4.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.32.0",
     "morgan": "^1.10.0",
+    "node-pg-migrate": "^7.5.2",
+    "pg": "^8.12.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "winston": "^3.13.0"
@@ -39,6 +45,7 @@
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
+    "@types/pg": "^8.11.6",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
