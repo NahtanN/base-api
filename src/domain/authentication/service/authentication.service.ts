@@ -8,6 +8,8 @@ import AppError from "@shared/errors";
 import JwtServiceInterface from "@infrastructure/jwt_service/jwt_service.interface";
 import { pbkdf2Sync, randomBytes } from "crypto";
 import AuthenticationServiceInterface from "./authentication_service.interface";
+import { AuthorizationFeatures } from "@domain/authorization/authorization_features.types";
+import UserEntity from "@domain/user/entity/user.entity";
 
 export default class AuthenticationService
   implements AuthenticationServiceInterface {
@@ -25,8 +27,18 @@ export default class AuthenticationService
 
     const encodedPassword = this.hashPassword(dto.password);
 
-    // TODO: set user features
     // TODO: save new user
+    const user: UserEntity = await this.userRepository.create(
+      dto.name,
+      dto.email,
+      `${encodedPassword.salt}.${encodedPassword.hash}`,
+      [
+        AuthorizationFeatures.CREATE_TOKEN,
+        AuthorizationFeatures.READ_TOKEN,
+        AuthorizationFeatures.READ_USER_OWN,
+        AuthorizationFeatures.CREATE_SERVICE_PROVIDER,
+      ],
+    );
 
     // TODO: create accessToken
     // TODO: return data
