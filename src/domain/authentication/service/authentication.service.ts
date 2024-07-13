@@ -28,7 +28,6 @@ export default class AuthenticationService
 
     const encodedPassword = this.hashPassword(dto.password);
 
-    // TODO: save new user
     const user: UserEntity = await this.userRepository.create(
       dto.name,
       dto.email,

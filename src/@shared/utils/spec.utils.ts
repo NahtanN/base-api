@@ -1,3 +1,5 @@
+import UserRepositoryInterface from "@domain/user/repository/user_repository.interface";
+import JwtServiceInterface from "@infrastructure/jwt_service/jwt_service.interface";
 import LoggerInterface from "@infrastructure/logger/logger.interface";
 
 export class SpecUtils {
@@ -15,6 +17,19 @@ export class SpecUtils {
       notice: jest.fn(),
       info: jest.fn(),
       debug: jest.fn(),
+    };
+  }
+
+  jwtService(): JwtServiceInterface {
+    return {
+      sign: jest.fn(),
+    };
+  }
+
+  userRepository(): UserRepositoryInterface {
+    return {
+      existsByEmail: jest.fn(),
+      create: jest.fn(),
     };
   }
 }
