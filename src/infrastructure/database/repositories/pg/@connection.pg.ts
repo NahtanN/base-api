@@ -42,7 +42,7 @@ export default class PgConnection {
           reject(AppError.internalServerError("Erro no servidor"));
         }
 
-        this.logger.info("TRANSACTION COMMITED");
+        this.logger.info("TRANSACTION COMMITTED");
         resolve(1);
       }),
     );

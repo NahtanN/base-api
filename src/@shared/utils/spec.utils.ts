@@ -1,6 +1,7 @@
 import UserRepositoryInterface from "@domain/user/repository/user_repository.interface";
 import JwtServiceInterface from "@infrastructure/jwt_service/jwt_service.interface";
 import LoggerInterface from "@infrastructure/logger/logger.interface";
+import { PoolClient } from "pg";
 
 export class SpecUtils {
   resetAllMocks() {
@@ -30,6 +31,12 @@ export class SpecUtils {
     return {
       existsByEmail: jest.fn(),
       create: jest.fn(),
+    };
+  }
+
+  conn(): Partial<PoolClient> {
+    return {
+      query: jest.fn(),
     };
   }
 }

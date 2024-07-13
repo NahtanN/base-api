@@ -26,6 +26,7 @@ export default class AuthenticationService
       throw AppError.unauthorized("Email já está em uso.");
     }
 
+    // TODO: validate password strength
     const encodedPassword = this.hashPassword(dto.password);
 
     const user: UserEntity = await this.userRepository.create(
