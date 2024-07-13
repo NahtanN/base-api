@@ -12,12 +12,13 @@ import { AuthorizationFeatures } from "@domain/authorization/authorization_featu
 import UserEntity from "@domain/user/entity/user.entity";
 
 export default class AuthenticationService
-  implements AuthenticationServiceInterface {
+  implements AuthenticationServiceInterface
+{
   constructor(
     private readonly logger: LoggerInterface,
     private readonly jwtService: JwtServiceInterface,
     private readonly userRepository: UserRepositoryInterface,
-  ) { }
+  ) {}
 
   async signUp(dto: SignUpRequest): Promise<SignUpResponseInterface> {
     const userExists = await this.userRepository.existsByEmail(dto.email);
@@ -40,11 +41,13 @@ export default class AuthenticationService
       ],
     );
 
-    // TODO: create accessToken
-    // TODO: return data
+    const accessToken = this.createJwtToken({
+      id: user.userId,
+    });
+
     return {
       message: "Usuário cadastrado com sucesso.",
-      accessToken: "asdf",
+      accessToken,
     };
   }
 
