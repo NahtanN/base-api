@@ -6,7 +6,8 @@ import AppError from "@shared/errors";
 import UserEntity from "@domain/user/entity/user.entity";
 
 export default class UserPgRepository
-  implements PgConnection, UserRepositoryInterface {
+  implements PgConnection, UserRepositoryInterface
+{
   logger: LoggerInterface;
   conn: PoolClient;
 
@@ -60,6 +61,7 @@ export default class UserPgRepository
     const params = [name, email, password, features];
 
     try {
+      await this.conn.query("BEGIN");
       const rows = await new Promise((resolve, reject) =>
         this.conn.query(query, params, (err, result) => {
           // password field must be redacted
@@ -76,12 +78,12 @@ export default class UserPgRepository
       );
       const user = rows[0];
 
-      return new UserEntity(
+      const userEntity = new UserEntity(
         user.id,
         user.user_id,
         user.name,
-        user.email_authenticated,
         user.email,
+        user.email_authenticated,
         user.password,
         user.features,
         user.accepted_at,
@@ -89,10 +91,19 @@ export default class UserPgRepository
         user.updated_at,
         user.deleted_at,
       );
+
+      await this.conn.query("COMMIT");
+      return userEntity;
     } catch (error) {
+      if (error instanceof AppError && error.data) {
+        throw error;
+      }
+
       throw AppError.internalServerError(
         "Não foi possível salvar o usuário no banco de dados.",
       );
+    } finally {
+      await this.conn.query("ROLLBACK");
     }
   }
 }

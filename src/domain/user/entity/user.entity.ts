@@ -1,4 +1,6 @@
 import EntityParams from "@domain/@shared/entity_params.interface";
+import AppError from "@shared/errors";
+import { z } from "zod";
 
 export default class UserEntity extends EntityParams {
   constructor(
@@ -51,7 +53,49 @@ export default class UserEntity extends EntityParams {
   }
 
   validate() {
-    console.log(this);
-    console.log("Validate");
+    const result = z
+      .object({
+        id: z.number(),
+        userId: z.string(),
+        name: z.string({
+          message: "`name` precisa ser do tipo `string`.",
+        }),
+        email: z
+          .string({
+            message: "`email` precisa ser do tipo `string`.",
+          })
+          .email({
+            message: "`email` precisa ser um email válido.",
+          }),
+        emailAuthenticated: z.boolean({
+          message: "`emailAuthenticated` precisa ser do tipo `boolean`.",
+        }),
+        password: z.string({
+          message: "`password` precisa ser do tipo `string`.",
+        }),
+        features: z.array(z.string(), {
+          message: "`features` precisa ser do tipo `string[]`.",
+        }),
+        acceptedAt: z.date({
+          message: "`acceptedAt` precisa ser do tipo `Date`.",
+        }),
+        createdAt: z.date({
+          message: "`acceptedAt` precisa ser do tipo `Date`.",
+        }),
+        updatedAt: z.date({
+          message: "`updatedAt` precisa ser do tipo `Date`.",
+        }),
+        deletedAt: z
+          .date({
+            message: "`deletedAt` precisa ser do tipo `Date`.",
+          })
+          .nullable(),
+      })
+      .safeParse(this);
+    if (!result.success)
+      throw AppError.invalidSchema(
+        "Não foi possível criar o usuário.",
+        result.error.format(),
+      );
   }
 }

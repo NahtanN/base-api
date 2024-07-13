@@ -1,10 +1,12 @@
 export default class AppError extends Error {
   statusCode: number;
+  data?: Record<string, any>;
 
-  constructor(message: string, statusCode: number) {
+  constructor(message: string, statusCode: number, data?: Record<string, any>) {
     super(message);
     this.name = this.constructor.name;
     this.statusCode = statusCode;
+    this.data = data;
 
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
@@ -193,5 +195,12 @@ export default class AppError extends Error {
     message: string = "Network Authentication Required",
   ): AppError {
     return new AppError(message, 511);
+  }
+
+  static invalidSchema(
+    message: string = "Invalid Schema",
+    data: Record<string, any>,
+  ): AppError {
+    return new AppError(message, 400, data);
   }
 }

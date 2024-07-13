@@ -17,6 +17,7 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
+    "strict": true,
     "paths": {
       "@shared/*": ["src/@shared/*"],
       "@domain/*": ["src/domain/*"],

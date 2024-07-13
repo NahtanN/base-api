@@ -3,6 +3,8 @@ import { ConfigModule } from "@nestjs/config";
 import { WinstonModule } from "./providers/loggers/winston/winstons.module";
 import PgModule from "./providers/database/pg/pg.module";
 import { AuthenticationModule } from "./modules/authentication/authentication.module";
+import { APP_FILTER } from "@nestjs/core";
+import HttpExceptionFilter from "./filters/exception.filter";
 
 @Module({
   imports: [
@@ -12,6 +14,11 @@ import { AuthenticationModule } from "./modules/authentication/authentication.mo
     AuthenticationModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
-export class AppModule { }
+export class AppModule {}
