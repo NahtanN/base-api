@@ -10,7 +10,7 @@ export default class UserRepository extends UserPgRepository {
   constructor(
     logger: WinstonService,
     @Inject(PG_CONNECTION)
-    readonly conn: PoolClient,
+    conn: PoolClient,
   ) {
     super(logger, conn);
   }

@@ -6,22 +6,11 @@ import AppError from "@shared/errors";
 import UserEntity from "@domain/user/entity/user.entity";
 
 export default class UserPgRepository
-  implements PgConnection, UserRepositoryInterface
+  extends PgConnection
+  implements UserRepositoryInterface
 {
-  logger: LoggerInterface;
-  conn: PoolClient;
-
   constructor(logger: LoggerInterface, conn: PoolClient) {
-    this.logger = logger;
-    this.conn = conn;
-  }
-
-  logSuccess(query: string, ...params: any[]): void {
-    this.logger.info("SUCCESS DATABASE QUERY", query, params);
-  }
-
-  logError(query: string, ...params: any[]): void {
-    this.logger.error("ERROR DATABASE QUERY", query, params);
+    super(logger, conn);
   }
 
   async existsByEmail(email: string): Promise<boolean> {
@@ -61,7 +50,7 @@ export default class UserPgRepository
     const params = [name, email, password, features];
 
     try {
-      await this.conn.query("BEGIN");
+      await this.startTransaction();
       const rows = await new Promise((resolve, reject) =>
         this.conn.query(query, params, (err, result) => {
           // password field must be redacted
@@ -92,9 +81,11 @@ export default class UserPgRepository
         user.deleted_at,
       );
 
-      await this.conn.query("COMMIT");
+      await this.commitTransaction();
       return userEntity;
     } catch (error) {
+      await this.rollbackTransaction();
+
       if (error instanceof AppError && error.data) {
         throw error;
       }
@@ -102,8 +93,6 @@ export default class UserPgRepository
       throw AppError.internalServerError(
         "Não foi possível salvar o usuário no banco de dados.",
       );
-    } finally {
-      await this.conn.query("ROLLBACK");
     }
   }
 }
