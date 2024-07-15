@@ -24,7 +24,7 @@ export class AuthenticationController {
 
   @SignInDocs()
   @Post("/sign-in")
-  signIn(@Body() dto: SignInRequest): SignInResponseInterface {
+  signIn(@Body() dto: SignInRequest): Promise<SignInResponseInterface> {
     return this.service.signIn(dto);
   }
 }

@@ -12,13 +12,12 @@ import { AuthorizationFeatures } from "@domain/authorization/authorization_featu
 import UserEntity from "@domain/user/entity/user.entity";
 
 export default class AuthenticationService
-  implements AuthenticationServiceInterface
-{
+  implements AuthenticationServiceInterface {
   constructor(
     private readonly logger: LoggerInterface,
     private readonly jwtService: JwtServiceInterface,
     private readonly userRepository: UserRepositoryInterface,
-  ) {}
+  ) { }
 
   async signUp(dto: SignUpRequest): Promise<SignUpResponseInterface> {
     const userExists = await this.userRepository.existsByEmail(dto.email);
@@ -51,13 +50,37 @@ export default class AuthenticationService
     };
   }
 
-  signIn(dto: SignInRequest): SignInResponseInterface {
-    // TODO: validate if user exists
-    // TODO: validate if user has feature
-    // TODO: validate password
-    // TODO: create accessToken
+  async signIn(dto: SignInRequest): Promise<SignInResponseInterface> {
+    let user: UserEntity | null;
+    try {
+      user = await this.userRepository.findByEmail(dto.login);
+    } catch (error) {
+      throw AppError.internalServerError(
+        "Não foi possível procurar o usuário.",
+      );
+    }
+    if (!user) {
+      throw AppError.badRequest("Usuário ou senha inválidos.");
+    }
+
+    const hasFeature = user.features.includes(
+      AuthorizationFeatures.CREATE_TOKEN,
+    );
+    if (!hasFeature) {
+      throw AppError.unauthorized("Usuário não possui autorização.");
+    }
+
+    const isValid = this.validatePassword(dto.password, user.password);
+    if (!isValid) {
+      throw AppError.badRequest("Usuário ou senha inválidos.");
+    }
+
+    const accessToken = this.createJwtToken({
+      id: user.userId,
+    });
+
     return {
-      accessToken: "asf",
+      accessToken,
     };
   }
 
@@ -78,5 +101,15 @@ export default class AuthenticationService
       salt: salt,
       hash: genHash,
     };
+  }
+
+  validatePassword(password: string, hashedPassword: string) {
+    const [salt, hash] = hashedPassword.split(".");
+
+    const hashVerify = pbkdf2Sync(password, salt, 10000, 64, "sha512").toString(
+      "hex",
+    );
+
+    return hash === hashVerify;
   }
 }

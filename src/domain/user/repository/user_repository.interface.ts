@@ -13,6 +13,7 @@ export default interface UserRepositoryInterface {
    * @param email - string
    * @param password - string
    * @param features - string[]; should be of AuthorizationFeatures
+   * @throws ApiError
    * */
   create(
     name: string,
@@ -20,4 +21,12 @@ export default interface UserRepositoryInterface {
     password: string,
     features: string[],
   ): Promise<UserEntity>;
+
+  /**
+   * Return a UserEntity if `email` is located on `users` table. If not, returns null.
+   * @param email - string
+   * @returns UserEntity | null
+   * @throws ApiError
+   * */
+  findByEmail(email: string): Promise<UserEntity | null>;
 }

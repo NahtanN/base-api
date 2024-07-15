@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpStatus,
@@ -13,6 +14,12 @@ export default class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+
+    if (exception instanceof BadRequestException) {
+      return response
+        .status(exception.getStatus())
+        .json(exception.getResponse());
+    }
 
     if (!(exception instanceof AppError)) {
       return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({

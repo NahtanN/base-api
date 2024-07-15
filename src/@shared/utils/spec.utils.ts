@@ -31,6 +31,7 @@ export class SpecUtils {
     return {
       existsByEmail: jest.fn(),
       create: jest.fn(),
+      findByEmail: jest.fn(),
     };
   }
 

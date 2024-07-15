@@ -5,7 +5,7 @@ import SignUpResponseInterface from "./dtos/response/sign_up.response";
 
 export default interface AuthenticationServiceInterface {
   signUp(dto: SignUpRequest): Promise<SignUpResponseInterface>;
-  signIn(dto: SignInRequest): SignInResponseInterface;
+  signIn(dto: SignInRequest): Promise<SignInResponseInterface>;
   createJwtToken(payload: Record<string, any>): string;
   hashPassword(password: string): {
     salt: string;

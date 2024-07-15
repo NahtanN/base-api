@@ -88,13 +88,13 @@ describe("AuthService", () => {
   });
 
   describe("signIn", () => {
-    it("should return an access token", () => {
+    it("should return an access token", async () => {
       const dto: SignInRequest = {
         login: "foo@bar.com",
         password: "password",
       };
 
-      const result = authService.signIn(dto);
+      const result = await authService.signIn(dto);
 
       expect(typeof result.accessToken).toBe("string");
     });
