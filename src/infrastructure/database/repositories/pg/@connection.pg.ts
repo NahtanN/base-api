@@ -6,7 +6,7 @@ export default class PgConnection {
   constructor(
     private logger: LoggerInterface,
     private _conn: PoolClient,
-  ) {}
+  ) { }
 
   get conn() {
     return this._conn;
@@ -25,11 +25,11 @@ export default class PgConnection {
       this.conn.query("BEGIN", (err, result) => {
         if (err) {
           this.logger.info("UNABLE TO START TRANSACTION", err);
-          reject(AppError.internalServerError("Erro no servidor"));
+          return reject(AppError.internalServerError("Erro no servidor"));
         }
 
         this.logger.info("TRANSACTION STARTED");
-        resolve(1);
+        return resolve(1);
       }),
     );
   }
@@ -39,11 +39,11 @@ export default class PgConnection {
       this.conn.query("COMMIT", (err, result) => {
         if (err) {
           this.logger.info("UNABLE TO COMMIT TRANSACTION", err);
-          reject(AppError.internalServerError("Erro no servidor"));
+          return reject(AppError.internalServerError("Erro no servidor"));
         }
 
         this.logger.info("TRANSACTION COMMITTED");
-        resolve(1);
+        return resolve(1);
       }),
     );
   }
@@ -53,11 +53,11 @@ export default class PgConnection {
       this.conn.query("ROLLBACK", (err, result) => {
         if (err) {
           this.logger.info("ROLLBACK TRANSACTION ERROR", err);
-          reject(AppError.internalServerError("Erro no servidor"));
+          return reject(AppError.internalServerError("Erro no servidor"));
         }
 
         this.logger.info("TRANSACTION ROLLBACK");
-        resolve(1);
+        return resolve(1);
       }),
     );
   }

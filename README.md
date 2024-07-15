@@ -1,4 +1,1 @@
-- [ ] unit test
-  - [x] authentication
-  - [x] pg connection
-  - [x] user pg
+

@@ -22,11 +22,11 @@ export default class UserPgRepository
         this.conn.query(query, params, (err, result) => {
           if (err) {
             this.logError(query, params);
-            reject(err);
+            return reject(err);
           }
 
           this.logSuccess(query, params);
-          resolve(result.rows);
+          return resolve(result.rows);
         }),
       );
 
@@ -57,11 +57,11 @@ export default class UserPgRepository
 
           if (err) {
             this.logError(query, params);
-            reject(err);
+            return reject(err);
           }
 
           this.logSuccess(query, params);
-          resolve(result.rows);
+          return resolve(result.rows);
         }),
       );
       const user = rows[0];
