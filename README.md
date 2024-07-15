@@ -1,5 +1,4 @@
 - [ ] unit test
   - [x] authentication
-  - [ ] pg connection
-  - [ ] user pg
-  - [ ] user entity
+  - [x] pg connection
+  - [x] user pg

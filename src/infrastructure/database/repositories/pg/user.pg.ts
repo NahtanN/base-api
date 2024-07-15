@@ -7,8 +7,7 @@ import UserEntity from "@domain/user/entity/user.entity";
 
 export default class UserPgRepository
   extends PgConnection
-  implements UserRepositoryInterface
-{
+  implements UserRepositoryInterface {
   constructor(logger: LoggerInterface, conn: PoolClient) {
     super(logger, conn);
   }
@@ -86,7 +85,10 @@ export default class UserPgRepository
     } catch (error) {
       await this.rollbackTransaction();
 
-      if (error instanceof AppError && error.data) {
+      if (
+        error instanceof AppError ||
+        (error instanceof AppError && error.data)
+      ) {
         throw error;
       }
 
