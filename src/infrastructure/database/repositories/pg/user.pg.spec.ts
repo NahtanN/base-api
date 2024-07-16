@@ -25,55 +25,41 @@ describe("UserPgRepository", () => {
 
   describe("existsByEmail", () => {
     it("should return `true` if email exists", async () => {
-      conn.query.mockImplementationOnce(
-        (query, params, callback: jest.Func) => {
-          callback(null, { rows: [{ exists: true }] });
-        },
-      );
+      jest
+        .spyOn(userRepository, "query")
+        .mockResolvedValueOnce([{ exists: true }]);
 
       const email = "foo@bar.com";
       const response = await userRepository.existsByEmail(email);
 
       const query =
-        "SELECT EXISTS(SELECT 1 FROM users WHERE email LIKE LOWER($1))";
+        "SELECT EXISTS(SELECT 1 FROM users WHERE email LIKE LOWER(TRIM($1)))";
       const params = [email];
 
       expect(response).toBe(true);
-      expect(conn.query).toHaveBeenCalledWith(
-        query,
-        params,
-        expect.any(Function),
-      );
+      expect(userRepository.query).toHaveBeenCalledWith(query, params);
     });
 
     it("should return `false` if email does not exists", async () => {
-      conn.query.mockImplementationOnce(
-        (query, params, callback: jest.Func) => {
-          callback(null, { rows: [{ exists: false }] });
-        },
-      );
+      jest
+        .spyOn(userRepository, "query")
+        .mockResolvedValueOnce([{ exists: false }]);
 
       const email = "foo@bar.com";
       const response = await userRepository.existsByEmail(email);
 
       const query =
-        "SELECT EXISTS(SELECT 1 FROM users WHERE email LIKE LOWER($1))";
+        "SELECT EXISTS(SELECT 1 FROM users WHERE email LIKE LOWER(TRIM($1)))";
       const params = [email];
 
       expect(response).toBe(false);
-      expect(conn.query).toHaveBeenCalledWith(
-        query,
-        params,
-        expect.any(Function),
-      );
+      expect(userRepository.query).toHaveBeenCalledWith(query, params);
     });
 
     it("should return an AppError if fails", async () => {
-      conn.query.mockImplementationOnce(
-        (query, params, callback: jest.Func) => {
-          callback(new Error("Connection Error"), null);
-        },
-      );
+      jest
+        .spyOn(userRepository, "query")
+        .mockRejectedValueOnce(new Error("Database error"));
 
       const email = "foo@bar.com";
       await expect(userRepository.existsByEmail(email)).rejects.toThrow(
@@ -83,31 +69,24 @@ describe("UserPgRepository", () => {
       );
 
       const query =
-        "SELECT EXISTS(SELECT 1 FROM users WHERE email LIKE LOWER($1))";
+        "SELECT EXISTS(SELECT 1 FROM users WHERE email LIKE LOWER(TRIM($1)))";
       const params = [email];
 
-      expect(conn.query).toHaveBeenCalledWith(
-        query,
-        params,
-        expect.any(Function),
-      );
+      expect(userRepository.query).toHaveBeenCalledWith(query, params);
     });
   });
 
   describe("create", () => {
     it("should create a new user", async () => {
-      const userDto = {
-        name: "Foo",
-        email: "foo@bar.com",
-        password: "password",
-        features: ["feature1", "feature2"],
-      };
       const date = new Date();
-      const row = {
-        ...userDto,
+      const userData = {
         id: 1,
         user_id: "uuid",
+        name: "Foo",
+        email: "foo@bar.com",
         email_authenticated: false,
+        password: "password",
+        features: ["feature1", "feature2"],
         accepted_at: date,
         created_at: date,
         updated_at: date,
@@ -116,61 +95,49 @@ describe("UserPgRepository", () => {
 
       jest.spyOn(userRepository, "startTransaction").mockResolvedValueOnce();
       jest.spyOn(userRepository, "commitTransaction").mockResolvedValueOnce();
-      conn.query.mockImplementationOnce(
-        (query, params, callback: jest.Func) => {
-          callback(null, { rows: [row] });
-        },
-      );
+      jest.spyOn(userRepository, "query").mockResolvedValueOnce([userData]);
+
+      const callback = (queryText, args) => {
+        args[2] = "redacted";
+      };
 
       const response = await userRepository.create(
-        userDto.name,
-        userDto.email,
-        userDto.password,
-        userDto.features,
+        userData.name,
+        userData.email,
+        userData.password,
+        userData.features,
       );
 
       expect(response).toBeInstanceOf(UserEntity);
-      expect(response.id).toBe(row.id);
-      expect(response.email).toBe(userDto.email);
+      expect(response.id).toBe(userData.id);
+      expect(response.email).toBe(userData.email);
       expect(userRepository.startTransaction).toHaveBeenCalled();
       expect(userRepository.commitTransaction).toHaveBeenCalled();
-      expect(conn.query).toHaveBeenCalledWith(
-        "INSERT INTO users (name, email, password, features) VALUES (TRIM($1), TRIM($2), $3, $4) RETURNING *",
-        [userDto.name, userDto.email, expect.any(String), userDto.features],
+      expect(userRepository.query).toHaveBeenCalledWith(
+        "INSERT INTO users (name, email, password, features) VALUES (TRIM($1), LOWER(TRIM($2)), $3, $4) RETURNING *",
+        [userData.name, userData.email, expect.any(String), userData.features],
         expect.any(Function),
       );
     });
 
     it("should fail to insert on database when `new UserEntity()` has an error", async () => {
-      const userDto = {
+      const date = new Date();
+      const row = {
+        id: 1,
+        user_id: "uuid",
+        email_authenticated: "error",
         name: "Foo",
         email: "foo@bar.com",
         password: "password",
         features: ["feature1", "feature2"],
       };
-      const date = new Date();
-      const row = {
-        ...userDto,
-        id: 1,
-        user_id: "uuid",
-        email_authenticated: "error",
-      };
 
       jest.spyOn(userRepository, "startTransaction").mockResolvedValueOnce();
       jest.spyOn(userRepository, "rollbackTransaction").mockResolvedValueOnce();
-      conn.query.mockImplementationOnce(
-        (query, params, callback: jest.Func) => {
-          callback(null, { rows: [row] });
-        },
-      );
+      jest.spyOn(userRepository, "query").mockResolvedValueOnce([row]);
 
       await expect(
-        userRepository.create(
-          userDto.name,
-          userDto.email,
-          userDto.password,
-          userDto.features,
-        ),
+        userRepository.create(row.name, row.email, row.password, row.features),
       ).rejects.toThrow(
         AppError.invalidSchema(
           "Não foi possível criar o usuário.",
@@ -217,27 +184,21 @@ describe("UserPgRepository", () => {
     it("should find user by email", async () => {
       const date = new Date();
 
-      conn.query.mockImplementationOnce(
-        (query, params, callback: jest.Func) => {
-          callback(null, {
-            rows: [
-              {
-                id: 1,
-                user_id: "uuid",
-                name: "Foo",
-                email: "foo@bar.com",
-                email_authenticated: false,
-                password: "password",
-                features: ["feature1", "feature2"],
-                accepted_at: date,
-                created_at: date,
-                updated_at: date,
-                deleted_at: date,
-              },
-            ],
-          });
+      jest.spyOn(userRepository, "query").mockResolvedValueOnce([
+        {
+          id: 1,
+          user_id: "uuid",
+          name: "Foo",
+          email: "foo@bar.com",
+          email_authenticated: false,
+          password: "password",
+          features: ["feature1", "feature2"],
+          accepted_at: date,
+          created_at: date,
+          updated_at: date,
+          deleted_at: date,
         },
-      );
+      ]);
 
       const email = "foo@bar.com";
       const response = await userRepository.findByEmail(email);
@@ -246,21 +207,11 @@ describe("UserPgRepository", () => {
       const params = [email];
 
       expect(response).toBeInstanceOf(UserEntity);
-      expect(conn.query).toHaveBeenCalledWith(
-        query,
-        params,
-        expect.any(Function),
-      );
+      expect(userRepository.query).toHaveBeenCalledWith(query, params);
     });
 
     it("should return null on user not found", async () => {
-      conn.query.mockImplementationOnce(
-        (query, params, callback: jest.Func) => {
-          callback(null, {
-            rows: [],
-          });
-        },
-      );
+      jest.spyOn(userRepository, "query").mockResolvedValueOnce([]);
 
       const email = "foo@bar.com";
       const response = await userRepository.findByEmail(email);
@@ -269,19 +220,13 @@ describe("UserPgRepository", () => {
       const params = [email];
 
       expect(response).toBe(null);
-      expect(conn.query).toHaveBeenCalledWith(
-        query,
-        params,
-        expect.any(Function),
-      );
+      expect(userRepository.query).toHaveBeenCalledWith(query, params);
     });
 
     it("should throw an error AppError on database error", async () => {
-      conn.query.mockImplementationOnce(
-        (query, params, callback: jest.Func) => {
-          callback(new Error("Connection Error"), null);
-        },
-      );
+      jest
+        .spyOn(userRepository, "query")
+        .mockRejectedValueOnce(new Error("Database Error"));
 
       const email = "foo@bar.com";
       await expect(userRepository.findByEmail(email)).rejects.toThrow(
@@ -293,11 +238,7 @@ describe("UserPgRepository", () => {
       const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
       const params = [email];
 
-      expect(conn.query).toHaveBeenCalledWith(
-        query,
-        params,
-        expect.any(Function),
-      );
+      expect(userRepository.query).toHaveBeenCalledWith(query, params);
     });
   });
 });

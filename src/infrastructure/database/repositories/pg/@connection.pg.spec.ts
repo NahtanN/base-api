@@ -113,6 +113,49 @@ describe("PgConnection", () => {
     });
   });
 
+  describe("query", () => {
+    it("should create a Pg query", async () => {
+      const query = "SELECT * FROM users";
+      const params = ["param"];
+
+      poolClient.query.mockImplementationOnce(
+        (query, params, callback: jest.Func) => {
+          callback(null, { rows: [] });
+        },
+      );
+
+      await pgConnection.query(query, params);
+
+      expect(poolClient.query).toHaveBeenCalledWith(
+        query,
+        params,
+        expect.any(Function),
+      );
+    });
+
+    it("should create a Pg query with callback", async () => {
+      const query = "SELECT * FROM users";
+      const params = ["param"];
+
+      poolClient.query.mockImplementationOnce(
+        (query, params, callback: jest.Func) => {
+          callback(null, { rows: [] });
+        },
+      );
+
+      await pgConnection.query(query, params, (queryText, args) => {
+        args[0] = "changed";
+      });
+
+      expect(poolClient.query).toHaveBeenCalledWith(
+        query,
+        params,
+        expect.any(Function),
+      );
+      expect(params[0]).toBe("changed");
+    });
+  });
+
   describe("rollbackTransaction", () => {
     it("should rollback a transaction successfully", async () => {
       poolClient.query.mockImplementationOnce((query, callback: jest.Func) => {
