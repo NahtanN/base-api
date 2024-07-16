@@ -99,7 +99,7 @@ export default class UserPgRepository
   }
 
   async findByEmail(email: string): Promise<UserEntity | null> {
-    const query = "SELECT * FROM users WHERE email like LOWER(TRIM($1))";
+    const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
     const params = [email];
 
     try {
@@ -148,7 +148,5 @@ export default class UserPgRepository
         "Não foi possível procurar o usuário no banco de dados.",
       );
     }
-
-    return null;
   }
 }

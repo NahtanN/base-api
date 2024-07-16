@@ -212,4 +212,92 @@ describe("UserPgRepository", () => {
       expect(userRepository.rollbackTransaction).toHaveBeenCalled();
     });
   });
+
+  describe("findByEmail", () => {
+    it("should find user by email", async () => {
+      const date = new Date();
+
+      conn.query.mockImplementationOnce(
+        (query, params, callback: jest.Func) => {
+          callback(null, {
+            rows: [
+              {
+                id: 1,
+                user_id: "uuid",
+                name: "Foo",
+                email: "foo@bar.com",
+                email_authenticated: false,
+                password: "password",
+                features: ["feature1", "feature2"],
+                accepted_at: date,
+                created_at: date,
+                updated_at: date,
+                deleted_at: date,
+              },
+            ],
+          });
+        },
+      );
+
+      const email = "foo@bar.com";
+      const response = await userRepository.findByEmail(email);
+
+      const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
+      const params = [email];
+
+      expect(response).toBeInstanceOf(UserEntity);
+      expect(conn.query).toHaveBeenCalledWith(
+        query,
+        params,
+        expect.any(Function),
+      );
+    });
+
+    it("should return null on user not found", async () => {
+      conn.query.mockImplementationOnce(
+        (query, params, callback: jest.Func) => {
+          callback(null, {
+            rows: [],
+          });
+        },
+      );
+
+      const email = "foo@bar.com";
+      const response = await userRepository.findByEmail(email);
+
+      const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
+      const params = [email];
+
+      expect(response).toBe(null);
+      expect(conn.query).toHaveBeenCalledWith(
+        query,
+        params,
+        expect.any(Function),
+      );
+    });
+
+    it("should throw an error AppError on database error", async () => {
+      conn.query.mockImplementationOnce(
+        (query, params, callback: jest.Func) => {
+          callback(new Error("Connection Error"), null);
+        },
+      );
+
+      const email = "foo@bar.com";
+      await expect(userRepository.findByEmail(email)).rejects.toThrow(
+        AppError.internalServerError(
+          "Não foi possível procurar o usuário no banco de dados.",
+        ),
+      );
+
+      const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
+      const params = [email];
+
+      expect(conn.query).toHaveBeenCalledWith(
+        query,
+        params,
+        expect.any(Function),
+      );
+    });
+  });
 });
