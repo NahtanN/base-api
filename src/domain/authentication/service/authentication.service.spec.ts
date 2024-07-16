@@ -34,6 +34,17 @@ describe("AuthService", () => {
     specUtils.resetAllMocks();
   });
 
+  it("should create a valid password", () => {
+    const password = "password";
+    const hashedPassword = authService.hashPassword(password);
+    const isValid = authService.validatePassword(
+      password,
+      `${hashedPassword.salt}.${hashedPassword.hash}`,
+    );
+
+    expect(isValid).toBe(true);
+  });
+
   describe("signUp", () => {
     it("should return a success message with access token", async () => {
       const dto: SignUpRequest = {
@@ -94,9 +105,76 @@ describe("AuthService", () => {
         password: "password",
       };
 
+      userRepositoryMock.findByEmail.mockResolvedValueOnce({
+        userId: "uuid",
+        features: [AuthorizationFeatures.CREATE_TOKEN],
+      } as UserEntity);
+      jest.spyOn(authService, "validatePassword").mockReturnValueOnce(true);
+      jest
+        .spyOn(authService, "createJwtToken")
+        .mockReturnValueOnce("accessToken");
+
       const result = await authService.signIn(dto);
 
+      expect(result).toBeDefined();
       expect(typeof result.accessToken).toBe("string");
+    });
+
+    it("should throw an error on findByEmail", async () => {
+      const dto: SignInRequest = {
+        login: "foo@bar.com",
+        password: "password",
+      };
+
+      userRepositoryMock.findByEmail.mockRejectedValueOnce(
+        new Error("Repository error"),
+      );
+      await expect(authService.signIn(dto)).rejects.toThrow(
+        AppError.internalServerError("Não foi possível procurar o usuário."),
+      );
+    });
+
+    it("should fail on user not found", async () => {
+      const dto: SignInRequest = {
+        login: "foo@bar.com",
+        password: "password",
+      };
+
+      userRepositoryMock.findByEmail.mockResolvedValueOnce(null);
+      await expect(authService.signIn(dto)).rejects.toThrow(
+        AppError.badRequest("Usuário ou senha inválidos."),
+      );
+    });
+
+    it("should fail when user does not have permission", async () => {
+      const dto: SignInRequest = {
+        login: "foo@bar.com",
+        password: "password",
+      };
+
+      userRepositoryMock.findByEmail.mockResolvedValueOnce({
+        userId: "uuid",
+        features: [],
+      } as UserEntity);
+      await expect(authService.signIn(dto)).rejects.toThrow(
+        AppError.unauthorized("Usuário não possui autorização."),
+      );
+    });
+
+    it("should fail on password validation", async () => {
+      const dto: SignInRequest = {
+        login: "foo@bar.com",
+        password: "password",
+      };
+
+      userRepositoryMock.findByEmail.mockResolvedValueOnce({
+        userId: "uuid",
+        features: [AuthorizationFeatures.CREATE_TOKEN],
+      } as UserEntity);
+      jest.spyOn(authService, "validatePassword").mockReturnValueOnce(false);
+      await expect(authService.signIn(dto)).rejects.toThrow(
+        AppError.badRequest("Usuário ou senha inválidos."),
+      );
     });
   });
 });
