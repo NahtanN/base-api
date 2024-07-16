@@ -14,22 +14,11 @@ export default class UserPgRepository
 
   async existsByEmail(email: string): Promise<boolean> {
     const query =
-      "SELECT EXISTS(SELECT 1 FROM users WHERE email LIKE LOWER($1))";
+      "SELECT EXISTS(SELECT 1 FROM users WHERE email LIKE LOWER(TRIM($1)))";
     const params = [email];
 
     try {
-      const rows = await new Promise((resolve, reject) =>
-        this.conn.query(query, params, (err, result) => {
-          if (err) {
-            this.logError(query, params);
-            return reject(err);
-          }
-
-          this.logSuccess(query, params);
-          return resolve(result.rows);
-        }),
-      );
-
+      const rows = await this.query(query, params);
       return rows[0].exists;
     } catch (error) {
       throw AppError.internalServerError(
@@ -45,25 +34,14 @@ export default class UserPgRepository
     features: string[],
   ): Promise<UserEntity> {
     const query =
-      "INSERT INTO users (name, email, password, features) VALUES (TRIM($1), TRIM($2), $3, $4) RETURNING *";
+      "INSERT INTO users (name, email, password, features) VALUES (TRIM($1), LOWER(TRIM($2)), $3, $4) RETURNING *";
     const params = [name, email, password, features];
 
     try {
       await this.startTransaction();
-      const rows = await new Promise((resolve, reject) =>
-        this.conn.query(query, params, (err, result) => {
-          // password field must be redacted
-          params[2] = "redacted";
-
-          if (err) {
-            this.logError(query, params);
-            return reject(err);
-          }
-
-          this.logSuccess(query, params);
-          return resolve(result.rows);
-        }),
-      );
+      const rows = await this.query(query, params, (queryText, args) => {
+        args[2] = "redacted";
+      });
       const user = rows[0];
 
       const userEntity = new UserEntity(
@@ -103,18 +81,7 @@ export default class UserPgRepository
     const params = [email];
 
     try {
-      const rows = await new Promise((resolve, reject) =>
-        this.conn.query(query, params, (err, result) => {
-          if (err) {
-            this.logError(query, params);
-            return reject(err);
-          }
-
-          this.logSuccess(query, params);
-          return resolve(result.rows);
-        }),
-      );
-
+      const rows = await this.query(query, params);
       const user = rows[0];
 
       if (!user) {
