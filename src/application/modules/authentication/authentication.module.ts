@@ -6,11 +6,13 @@ import AppAuthService from "./authentication.service";
 import PgModule from "src/application/providers/database/pg/pg.module";
 import AppAuthenticationService from "./authentication.service";
 import { JwtModule } from "@nestjs/jwt";
+import { PassportModule } from "@nestjs/passport";
+import { JwtStrategy } from "src/application/guards/strategies/jwt.stategy";
 
 @Global()
 @Module({
   imports: [
-    PgModule,
+    PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {
@@ -28,6 +30,7 @@ import { JwtModule } from "@nestjs/jwt";
       provide: "AuthenticationServiceInterface",
       useClass: AppAuthenticationService,
     },
+    JwtStrategy,
   ],
 })
-export class AuthenticationModule { }
+export class AuthenticationModule {}

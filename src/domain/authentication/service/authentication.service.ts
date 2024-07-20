@@ -12,12 +12,13 @@ import { AuthorizationFeatures } from "@domain/authorization/authorization_featu
 import UserEntity from "@domain/user/entity/user.entity";
 
 export default class AuthenticationService
-  implements AuthenticationServiceInterface {
+  implements AuthenticationServiceInterface
+{
   constructor(
     private readonly logger: LoggerInterface,
     private readonly jwtService: JwtServiceInterface,
     private readonly userRepository: UserRepositoryInterface,
-  ) { }
+  ) {}
 
   async signUp(dto: SignUpRequest): Promise<SignUpResponseInterface> {
     const userExists = await this.userRepository.existsByEmail(dto.email);
@@ -35,8 +36,8 @@ export default class AuthenticationService
       [
         AuthorizationFeatures.CREATE_TOKEN,
         AuthorizationFeatures.READ_TOKEN,
-        AuthorizationFeatures.READ_USER_OWN,
-        AuthorizationFeatures.CREATE_SERVICE_PROVIDER,
+        AuthorizationFeatures.READ_USER_SELF,
+        AuthorizationFeatures.CREATE_CONTRACTOR,
       ],
     );
 

@@ -1,4 +1,7 @@
-- [x] create auth sign in unit tests
-- [x] create user pg repository findByEmail unit tests
-- [x] refactor promise handler on user pg repository
-- [ ] refactor unit tests for user pg repository
+- [ ] inject user data on request
+- [ ] create routes
+  - [ ] (POST) new contractor
+  - [ ] (PUT) update contractor
+  - [ ] (GET) get one contractor by id or slug
+  - [ ] (GET) list user contractors
+  - [ ] (GET) list contractors

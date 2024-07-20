@@ -7,7 +7,8 @@ import UserEntity from "@domain/user/entity/user.entity";
 
 export default class UserPgRepository
   extends PgConnection
-  implements UserRepositoryInterface {
+  implements UserRepositoryInterface
+{
   constructor(logger: LoggerInterface, conn: PoolClient) {
     super(logger, conn);
   }
@@ -104,6 +105,48 @@ export default class UserPgRepository
 
       return userEntity;
     } catch (error) {
+      if (
+        error instanceof AppError ||
+        (error instanceof AppError && error.data)
+      ) {
+        throw error;
+      }
+
+      throw AppError.internalServerError(
+        "Não foi possível procurar o usuário no banco de dados.",
+      );
+    }
+  }
+
+  async findById(id: string): Promise<UserEntity | null> {
+    const query = "SELECT * FROM users WHERE user_id = $1";
+    const params = [id];
+
+    try {
+      const rows = await this.query(query, params);
+      const user = rows[0];
+
+      if (!user) {
+        return null;
+      }
+
+      const userEntity = new UserEntity(
+        user.id,
+        user.user_id,
+        user.name,
+        user.email,
+        user.email_authenticated,
+        user.password,
+        user.features,
+        user.accepted_at,
+        user.created_at,
+        user.updated_at,
+        user.deleted_at,
+      );
+
+      return userEntity;
+    } catch (error) {
+      console.log(error);
       if (
         error instanceof AppError ||
         (error instanceof AppError && error.data)
