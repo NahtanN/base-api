@@ -1,19 +1,19 @@
 export default class EntityParams {
   constructor(
-    private _createdAt: Date,
-    private _updatedAt: Date,
-    private _deletedAt: Date,
+    private createdAt: Date,
+    private updatedAt: Date,
+    private deletedAt: Date,
   ) { }
 
-  get createdAt(): Date {
-    return this._createdAt;
+  getCreatedAt(): Date {
+    return this.createdAt;
   }
 
-  get updatedAt() {
-    return this._updatedAt;
+  getUpdatedAt() {
+    return this.updatedAt;
   }
 
-  get deletedAt() {
-    return this._deletedAt;
+  getDeletedAt() {
+    return this.deletedAt;
   }
 }

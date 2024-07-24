@@ -12,13 +12,12 @@ import { AuthorizationFeatures } from "@domain/authorization/authorization_featu
 import UserEntity from "@domain/user/entity/user.entity";
 
 export default class AuthenticationService
-  implements AuthenticationServiceInterface
-{
+  implements AuthenticationServiceInterface {
   constructor(
     private readonly logger: LoggerInterface,
     private readonly jwtService: JwtServiceInterface,
     private readonly userRepository: UserRepositoryInterface,
-  ) {}
+  ) { }
 
   async signUp(dto: SignUpRequest): Promise<SignUpResponseInterface> {
     const userExists = await this.userRepository.existsByEmail(dto.email);
@@ -42,7 +41,7 @@ export default class AuthenticationService
     );
 
     const accessToken = this.createJwtToken({
-      id: user.userId,
+      id: user.getUserId(),
     });
 
     return {
@@ -64,20 +63,20 @@ export default class AuthenticationService
       throw AppError.badRequest("Usuário ou senha inválidos.");
     }
 
-    const hasFeature = user.features.includes(
-      AuthorizationFeatures.CREATE_TOKEN,
-    );
+    const hasFeature = user
+      .getFeatures()
+      .includes(AuthorizationFeatures.CREATE_TOKEN);
     if (!hasFeature) {
       throw AppError.unauthorized("Usuário não possui autorização.");
     }
 
-    const isValid = this.validatePassword(dto.password, user.password);
+    const isValid = this.validatePassword(dto.password, user.getPassword());
     if (!isValid) {
       throw AppError.badRequest("Usuário ou senha inválidos.");
     }
 
     const accessToken = this.createJwtToken({
-      id: user.userId,
+      id: user.getUserId(),
     });
 
     return {

@@ -109,8 +109,8 @@ describe("UserPgRepository", () => {
       );
 
       expect(response).toBeInstanceOf(UserEntity);
-      expect(response.id).toBe(userData.id);
-      expect(response.email).toBe(userData.email);
+      expect(response.getId()).toBe(userData.id);
+      expect(response.getEmail()).toBe(userData.email);
       expect(userRepository.startTransaction).toHaveBeenCalled();
       expect(userRepository.commitTransaction).toHaveBeenCalled();
       expect(userRepository.query).toHaveBeenCalledWith(
@@ -180,7 +180,7 @@ describe("UserPgRepository", () => {
     });
   });
 
-  describe("findByEmail", () => {
+  describe("find", () => {
     it("should find user by email", async () => {
       const date = new Date();
 
@@ -200,11 +200,11 @@ describe("UserPgRepository", () => {
         },
       ]);
 
-      const email = "foo@bar.com";
-      const response = await userRepository.findByEmail(email);
-
       const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
+      const email = "foo@bar.com";
       const params = [email];
+
+      const response = await userRepository.find(query, params);
 
       expect(response).toBeInstanceOf(UserEntity);
       expect(userRepository.query).toHaveBeenCalledWith(query, params);
@@ -239,6 +239,94 @@ describe("UserPgRepository", () => {
       const params = [email];
 
       expect(userRepository.query).toHaveBeenCalledWith(query, params);
+    });
+  });
+
+  describe("findByEmail", () => {
+    it("should call with the correct query and params", async () => {
+      const email = "foo@bar.com";
+      const user: UserEntity = new UserEntity(
+        1,
+        "uuid",
+        "Foo",
+        email,
+        false,
+        "password",
+        ["feature1", "feature2"],
+        new Date(),
+        new Date(),
+        new Date(),
+        new Date(),
+      );
+
+      jest.spyOn(userRepository, "find").mockResolvedValueOnce(user);
+
+      const response = await userRepository.findByEmail(email);
+
+      expect(response).toBeInstanceOf(UserEntity);
+      expect(userRepository.find).toHaveBeenCalledWith(
+        "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))",
+        [email],
+      );
+      expect(response).toBe(user);
+    });
+
+    it("should return null if user not found", async () => {
+      const email = "foo@bar.com";
+
+      jest.spyOn(userRepository, "find").mockResolvedValueOnce(null);
+
+      const response = await userRepository.findByEmail(email);
+
+      expect(userRepository.find).toHaveBeenCalledWith(
+        "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))",
+        [email],
+      );
+      expect(response).toBe(null);
+    });
+  });
+
+  describe("findById", () => {
+    it("should call with the correct query and params", async () => {
+      const id = "uuid";
+      const user: UserEntity = new UserEntity(
+        1,
+        "uuid",
+        "Foo",
+        "foo@bar.com",
+        false,
+        "password",
+        ["feature1", "feature2"],
+        new Date(),
+        new Date(),
+        new Date(),
+        new Date(),
+      );
+
+      jest.spyOn(userRepository, "find").mockResolvedValueOnce(user);
+
+      const response = await userRepository.findById(id);
+
+      expect(response).toBeInstanceOf(UserEntity);
+      expect(userRepository.find).toHaveBeenCalledWith(
+        "SELECT * FROM users WHERE user_id = $1",
+        [id],
+      );
+      expect(response).toBe(user);
+    });
+
+    it("should return null if user not found", async () => {
+      const id = "uuid";
+
+      jest.spyOn(userRepository, "find").mockResolvedValueOnce(null);
+
+      const response = await userRepository.findById(id);
+
+      expect(userRepository.find).toHaveBeenCalledWith(
+        "SELECT * FROM users WHERE user_id = $1",
+        [id],
+      );
+      expect(response).toBe(null);
     });
   });
 });

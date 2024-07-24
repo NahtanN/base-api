@@ -7,8 +7,7 @@ import UserEntity from "@domain/user/entity/user.entity";
 
 export default class UserPgRepository
   extends PgConnection
-  implements UserRepositoryInterface
-{
+  implements UserRepositoryInterface {
   constructor(logger: LoggerInterface, conn: PoolClient) {
     super(logger, conn);
   }
@@ -77,10 +76,7 @@ export default class UserPgRepository
     }
   }
 
-  async findByEmail(email: string): Promise<UserEntity | null> {
-    const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
-    const params = [email];
-
+  async find(query: string, params: any[]): Promise<UserEntity | null> {
     try {
       const rows = await this.query(query, params);
       const user = rows[0];
@@ -118,45 +114,17 @@ export default class UserPgRepository
     }
   }
 
+  async findByEmail(email: string): Promise<UserEntity | null> {
+    const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
+    const params = [email];
+
+    return this.find(query, params);
+  }
+
   async findById(id: string): Promise<UserEntity | null> {
     const query = "SELECT * FROM users WHERE user_id = $1";
     const params = [id];
 
-    try {
-      const rows = await this.query(query, params);
-      const user = rows[0];
-
-      if (!user) {
-        return null;
-      }
-
-      const userEntity = new UserEntity(
-        user.id,
-        user.user_id,
-        user.name,
-        user.email,
-        user.email_authenticated,
-        user.password,
-        user.features,
-        user.accepted_at,
-        user.created_at,
-        user.updated_at,
-        user.deleted_at,
-      );
-
-      return userEntity;
-    } catch (error) {
-      console.log(error);
-      if (
-        error instanceof AppError ||
-        (error instanceof AppError && error.data)
-      ) {
-        throw error;
-      }
-
-      throw AppError.internalServerError(
-        "Não foi possível procurar o usuário no banco de dados.",
-      );
-    }
+    return this.find(query, params);
   }
 }

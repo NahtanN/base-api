@@ -1,17 +1,18 @@
 import EntityParams from "@domain/@shared/entity_params.interface";
 import AppError from "@shared/errors";
 import { z } from "zod";
+import { UserInterface } from "../interfaces/user.interface";
 
 export default class UserEntity extends EntityParams {
   constructor(
-    private _id: number,
-    private _userId: string,
-    private _name: string,
-    private _email: string,
-    private _emailAuthenticated: boolean,
-    private _password: string,
-    private _features: string[],
-    private _acceptedAt: Date,
+    private id: number,
+    private userId: string,
+    private name: string,
+    private email: string,
+    private emailAuthenticated: boolean,
+    private password: string,
+    private features: string[],
+    private acceptedAt: Date,
     createdAt: Date,
     updatedAt: Date,
     deletedAt: Date,
@@ -20,36 +21,36 @@ export default class UserEntity extends EntityParams {
     this.validate();
   }
 
-  get id() {
-    return this._id;
+  getId() {
+    return this.id;
   }
 
-  get userId() {
-    return this._userId;
+  getUserId() {
+    return this.userId;
   }
 
-  get name() {
-    return this._name;
+  getName() {
+    return this.name;
   }
 
-  get email() {
-    return this._email;
+  getEmail() {
+    return this.email;
   }
 
-  get emailAuthenticated() {
-    return this._emailAuthenticated;
+  getEmailAuthenticated() {
+    return this.emailAuthenticated;
   }
 
-  get password() {
-    return this._password;
+  getPassword() {
+    return this.password;
   }
 
-  get features() {
-    return this._features;
+  getFeatures() {
+    return this.features;
   }
 
-  get acceptedAt() {
-    return this._acceptedAt;
+  getAcceptedAt() {
+    return this.acceptedAt;
   }
 
   validate() {
