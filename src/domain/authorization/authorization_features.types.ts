@@ -5,7 +5,4 @@ export const AuthorizationFeatures = Object.freeze({
 
   // User
   READ_USER_SELF: "read:user:self",
-
-  // Service Provider
-  CREATE_CONTRACTOR: "create:contractor",
 });

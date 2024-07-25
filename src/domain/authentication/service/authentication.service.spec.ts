@@ -73,7 +73,6 @@ describe("AuthService", () => {
           AuthorizationFeatures.CREATE_TOKEN,
           AuthorizationFeatures.READ_TOKEN,
           AuthorizationFeatures.READ_USER_SELF,
-          AuthorizationFeatures.CREATE_CONTRACTOR,
         ],
       );
       expect(jwtServiceMock.sign).toHaveBeenCalledWith({

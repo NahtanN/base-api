@@ -5,7 +5,6 @@ import PgModule from "./providers/database/pg/pg.module";
 import { AuthenticationModule } from "./modules/authentication/authentication.module";
 import { APP_FILTER, APP_GUARD } from "@nestjs/core";
 import HttpExceptionFilter from "./filters/exception.filter";
-import { ContractorModule } from "./modules/contractor/contractor.module";
 import { AuthenticationGuard } from "./guards/authentication.guard";
 import { JwtModule } from "@nestjs/jwt";
 import { UserModule } from "./modules/user/user.module";
@@ -16,7 +15,6 @@ import { UserModule } from "./modules/user/user.module";
     WinstonModule,
     PgModule,
     AuthenticationModule,
-    ContractorModule,
     UserModule,
   ],
   controllers: [],
@@ -31,4 +29,4 @@ import { UserModule } from "./modules/user/user.module";
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

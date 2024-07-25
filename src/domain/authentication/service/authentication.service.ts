@@ -36,7 +36,6 @@ export default class AuthenticationService
         AuthorizationFeatures.CREATE_TOKEN,
         AuthorizationFeatures.READ_TOKEN,
         AuthorizationFeatures.READ_USER_SELF,
-        AuthorizationFeatures.CREATE_CONTRACTOR,
       ],
     );
 
