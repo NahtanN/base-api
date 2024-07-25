@@ -35,13 +35,12 @@ export default class AuthenticationService
       [
         AuthorizationFeatures.CREATE_TOKEN,
         AuthorizationFeatures.READ_TOKEN,
-        AuthorizationFeatures.READ_USER_OWN,
-        AuthorizationFeatures.CREATE_SERVICE_PROVIDER,
+        AuthorizationFeatures.READ_USER_SELF,
       ],
     );
 
     const accessToken = this.createJwtToken({
-      id: user.userId,
+      id: user.getUserId(),
     });
 
     return {
@@ -63,20 +62,20 @@ export default class AuthenticationService
       throw AppError.badRequest("Usuário ou senha inválidos.");
     }
 
-    const hasFeature = user.features.includes(
-      AuthorizationFeatures.CREATE_TOKEN,
-    );
+    const hasFeature = user
+      .getFeatures()
+      .includes(AuthorizationFeatures.CREATE_TOKEN);
     if (!hasFeature) {
       throw AppError.unauthorized("Usuário não possui autorização.");
     }
 
-    const isValid = this.validatePassword(dto.password, user.password);
+    const isValid = this.validatePassword(dto.password, user.getPassword());
     if (!isValid) {
       throw AppError.badRequest("Usuário ou senha inválidos.");
     }
 
     const accessToken = this.createJwtToken({
-      id: user.userId,
+      id: user.getUserId(),
     });
 
     return {

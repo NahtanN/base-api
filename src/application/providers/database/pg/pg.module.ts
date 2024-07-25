@@ -1,5 +1,5 @@
 require("dotenv").config();
-import { Module } from "@nestjs/common";
+import { Global, Module } from "@nestjs/common";
 import { Pool } from "pg";
 import { PG_CONNECTION } from "src/application/constants";
 import UserRepository from "./user.repository";
@@ -15,8 +15,9 @@ const dbProvider = {
   }),
 };
 
+@Global()
 @Module({
   providers: [dbProvider, UserRepository],
   exports: [UserRepository],
 })
-export default class PgModule { }
+export default class PgModule {}

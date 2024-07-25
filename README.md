@@ -1,4 +1,1 @@
-- [x] create auth sign in unit tests
-- [x] create user pg repository findByEmail unit tests
-- [x] refactor promise handler on user pg repository
-- [ ] refactor unit tests for user pg repository
+

@@ -29,4 +29,12 @@ export default interface UserRepositoryInterface {
    * @throws ApiError
    * */
   findByEmail(email: string): Promise<UserEntity | null>;
+
+  /**
+   * Return a UserEntity if `user_id` is located on `users` table. If not, returns null.
+   * @param id - string
+   * @returns UserEntity | null
+   * @throws ApiError
+   * */
+  findById(id: string): Promise<UserEntity | null>;
 }

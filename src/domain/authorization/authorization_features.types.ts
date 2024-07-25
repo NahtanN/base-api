@@ -4,8 +4,5 @@ export const AuthorizationFeatures = Object.freeze({
   READ_TOKEN: "read:token",
 
   // User
-  READ_USER_OWN: "read:user:own",
-
-  // Service Provider
-  CREATE_SERVICE_PROVIDER: "create:service_provider",
+  READ_USER_SELF: "read:user:self",
 });

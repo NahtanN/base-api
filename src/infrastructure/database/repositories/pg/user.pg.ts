@@ -76,10 +76,7 @@ export default class UserPgRepository
     }
   }
 
-  async findByEmail(email: string): Promise<UserEntity | null> {
-    const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
-    const params = [email];
-
+  async find(query: string, params: any[]): Promise<UserEntity | null> {
     try {
       const rows = await this.query(query, params);
       const user = rows[0];
@@ -115,5 +112,19 @@ export default class UserPgRepository
         "Não foi possível procurar o usuário no banco de dados.",
       );
     }
+  }
+
+  async findByEmail(email: string): Promise<UserEntity | null> {
+    const query = "SELECT * FROM users WHERE email LIKE LOWER(TRIM($1))";
+    const params = [email];
+
+    return this.find(query, params);
+  }
+
+  async findById(id: string): Promise<UserEntity | null> {
+    const query = "SELECT * FROM users WHERE user_id = $1";
+    const params = [id];
+
+    return this.find(query, params);
   }
 }

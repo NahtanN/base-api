@@ -4,6 +4,7 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
+  NotFoundException,
 } from "@nestjs/common";
 import AppError from "@shared/errors";
 import { Response } from "express";
@@ -15,7 +16,10 @@ export default class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    if (exception instanceof BadRequestException) {
+    if (
+      exception instanceof BadRequestException ||
+      exception instanceof NotFoundException
+    ) {
       return response
         .status(exception.getStatus())
         .json(exception.getResponse());

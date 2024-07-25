@@ -52,10 +52,7 @@ describe("AuthService", () => {
         email: "foo@bar.com",
         password: "password",
       };
-      const user = {
-        id: 1,
-        userId: "uuid",
-      } as UserEntity;
+      const user = specUtils.mockUser();
       const accessToken = "mockedAccessToken";
 
       userRepositoryMock.existsByEmail.mockResolvedValueOnce(false);
@@ -75,12 +72,11 @@ describe("AuthService", () => {
         [
           AuthorizationFeatures.CREATE_TOKEN,
           AuthorizationFeatures.READ_TOKEN,
-          AuthorizationFeatures.READ_USER_OWN,
-          AuthorizationFeatures.CREATE_SERVICE_PROVIDER,
+          AuthorizationFeatures.READ_USER_SELF,
         ],
       );
       expect(jwtServiceMock.sign).toHaveBeenCalledWith({
-        id: user.userId,
+        id: user.getUserId(),
       });
     });
 
@@ -105,10 +101,10 @@ describe("AuthService", () => {
         password: "password",
       };
 
-      userRepositoryMock.findByEmail.mockResolvedValueOnce({
-        userId: "uuid",
+      const user = specUtils.mockUser({
         features: [AuthorizationFeatures.CREATE_TOKEN],
-      } as UserEntity);
+      });
+      userRepositoryMock.findByEmail.mockResolvedValueOnce(user);
       jest.spyOn(authService, "validatePassword").mockReturnValueOnce(true);
       jest
         .spyOn(authService, "createJwtToken")
@@ -152,10 +148,8 @@ describe("AuthService", () => {
         password: "password",
       };
 
-      userRepositoryMock.findByEmail.mockResolvedValueOnce({
-        userId: "uuid",
-        features: [],
-      } as UserEntity);
+      const user = specUtils.mockUser();
+      userRepositoryMock.findByEmail.mockResolvedValueOnce(user);
       await expect(authService.signIn(dto)).rejects.toThrow(
         AppError.unauthorized("Usuário não possui autorização."),
       );
@@ -167,10 +161,10 @@ describe("AuthService", () => {
         password: "password",
       };
 
-      userRepositoryMock.findByEmail.mockResolvedValueOnce({
-        userId: "uuid",
+      const user = specUtils.mockUser({
         features: [AuthorizationFeatures.CREATE_TOKEN],
-      } as UserEntity);
+      });
+      userRepositoryMock.findByEmail.mockResolvedValueOnce(user);
       jest.spyOn(authService, "validatePassword").mockReturnValueOnce(false);
       await expect(authService.signIn(dto)).rejects.toThrow(
         AppError.badRequest("Usuário ou senha inválidos."),
